@@ -25,7 +25,7 @@
 #include <sys/ioctl.h>
 #include <linux/fs.h>
 
-#define U_BOOT_VERSION "2025"
+#define U_BOOT_VERSION "2025.8"
 
 //prototypes
 int fw_getenv_get_primary(struct env_opts *opts);
@@ -34,6 +34,8 @@ int fw_getenv_get_state(struct env_opts *opts, char *target);
 int fw_setenv_set_state(struct env_opts *opts, char *target, char* state);
 int fw_setenv_set_primary(struct env_opts *opts, char *target);
 int fw_setenv_force_rescue(struct env_opts *opts);
+int fw_getenv_get_valid(struct env_opts *opts, char *target);
+int fw_setenv_set_bootfw_slot(struct env_opts *opts, char *target);
 
 static struct env_opts env_opts;
 
@@ -160,6 +162,11 @@ int parse_rauc_args(int argc, char *argv[])
 		}
 		return 0;
 	}
+	else if ( argc == 3 && !strcmp( argv[ 1 ], "get-valid" ) )
+	{
+		int ret = fw_getenv_get_valid(&env_opts, argv[ 2 ]);
+		return 0;
+	}
 	else if ( argc == 3 && !strcmp( argv[ 1 ], "get-boot-count" ) )
 	{
 		fw_getenv_get_boot_count(&env_opts, argv[ 2 ], NULL);
@@ -172,8 +179,15 @@ int parse_rauc_args(int argc, char *argv[])
 	}
 	else if ( argc == 2 && !strcmp( argv[ 1 ], "force-rescue" ) )
 	{
+		//set_blockdev_ro(0);
+		//fw_setenv_force_rescue(&env_opts);
+		//set_blockdev_ro(1);
+	}
+	else if ( argc == 3 && !strcmp( argv[ 1 ], "set-bootfw-slot" ) )
+	{
+		//set primary implies setting A or B as primary, but also marking it as good
 		set_blockdev_ro(0);
-		fw_setenv_force_rescue(&env_opts);
+		fw_setenv_set_bootfw_slot(&env_opts, argv[ 2 ]);
 		set_blockdev_ro(1);
 	}
 	

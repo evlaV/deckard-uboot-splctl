@@ -596,6 +596,44 @@ int fw_getenv_get_boot_count(struct env_opts *opts, char *target, int * boot_cou
 	return 1;
 }
 
+int fw_getenv_get_valid(struct env_opts *opts, char *target) 
+{
+	char strval[64];
+	strval[0] = '\0';
+	if(!strcmp(target,"A"))
+	{
+		char *new_argv[] = { "BOOT_VALID_A", NULL };
+		int argc = sizeof(new_argv) / sizeof(new_argv[0]) - 1; // Subtract 1 for NULL
+		fw_getenvvar(argc, new_argv, strval, opts);
+	}
+	else if(!strcmp(target,"B"))
+	{
+		char *new_argv[] = { "BOOT_VALID_B", NULL };
+		int argc = sizeof(new_argv) / sizeof(new_argv[0]) - 1; // Subtract 1 for NULL
+		fw_getenvvar(argc, new_argv, strval, opts);
+	}
+	else {
+		//error -- they specified something other than A or B
+		return 1;
+	}
+
+	char * strptr;
+	strptr = extract_quoted_str(strval);
+
+	if(!strcmp(strptr,"1")) {
+		printf("good\n");
+	}
+	else if(!strcmp(strptr,"0")) {
+		printf("bad\n");
+	}
+	else
+	{
+		return 1;
+	}
+
+	return 0;
+}
+
 int fw_getenv_get_state(struct env_opts *opts, char *target) 
 {
 	char strval[64];
@@ -676,7 +714,27 @@ int fw_setenv_force_rescue(struct env_opts *opts)
 	return 0;
 }
 
-
+int fw_setenv_set_bootfw_slot(struct env_opts *opts, char *target)
+{
+	char *new_argv[] = { NULL, NULL, NULL };
+	int argc = 2;
+	if(!strcmp(target,"A")) 
+	{
+		new_argv[0] = "BOOT_FW_SLOT"; new_argv[1] = "A";
+	}
+	else if(!strcmp(target,"B")) 
+	{
+		new_argv[0] = "BOOT_FW_SLOT"; new_argv[1] = "B";
+	}
+	else 
+	{
+		return 1;
+	}
+	
+	fw_env_set(argc, new_argv, opts);
+	
+	return 0;
+}
 
 int fw_setenv_set_primary(struct env_opts *opts, char *target)
 {

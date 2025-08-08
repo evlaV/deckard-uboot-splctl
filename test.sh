@@ -198,17 +198,35 @@ test_command "/tmp/splctl get-state B" "good"
 echo "----------------------------------------"
 
 echo "----------------------------------------"
-echo "--> this shows that the force-rescue command works"
-#first clear FORCE_RESCUE
-busybox blockdev --setrw "${SPLENVPARTITION}"
-fw_setenv -c /tmp/spl_fw_env.config FORCE_RESCUE
-busybox blockdev --setro "${SPLENVPARTITION}"
-test_command "/tmp/splctl force-rescue" ""
-fw_printenv -c /tmp/spl_fw_env.config | grep FORCE_RESCUE
-#now clear FORCE_RESCUE again
-busybox blockdev --setrw "${SPLENVPARTITION}"
-fw_setenv -c /tmp/spl_fw_env.config FORCE_RESCUE
-busybox blockdev --setro "${SPLENVPARTITION}"
+echo "--> this shows that the BOOT_VALID_A/B works"
+busybox blockdev --setrw $SPLENVPARTITION
+fw_setenv -c /tmp/spl_fw_env.config BOOT_VALID_A 0
+fw_setenv -c /tmp/spl_fw_env.config BOOT_VALID_B 0
+busybox blockdev --setro $SPLENVPARTITION
+test_command  "/tmp/splctl get-valid A" "bad"
+test_command  "/tmp/splctl get-valid B" "bad"
+echo "----------------------------------------"
+
+echo "----------------------------------------"
+echo "--> this shows that the BOOT_VALID_A/B works"
+busybox blockdev --setrw $SPLENVPARTITION"
+fw_setenv -c /tmp/spl_fw_env.config BOOT_VALID_A 1
+fw_setenv -c /tmp/spl_fw_env.config BOOT_VALID_B 1
+busybox blockdev --setro $SPLENVPARTITION
+test_command  "/tmp/splctl get-valid A" "good"
+test_command  "/tmp/splctl get-valid B" "good"
+echo "----------------------------------------"
+
+echo "----------------------------------------"
+echo "--> this runs the set-bootfw-slot command"
+test_command "/tmp/splctl set-bootfw-slot A" ""
+test_command "fw_printenv -c /tmp/spl_fw_env.config | grep BOOT_FW_SLOT" "BOOT_FW_SLOT=A"
+test_command "/tmp/splctl set-bootfw-slot B" ""
+test_command "fw_printenv -c /tmp/spl_fw_env.config | grep BOOT_FW_SLOT" "BOOT_FW_SLOT=B"
+busybox blockdev --setrw $SPLENVPARTITION"
+fw_setenv -c /tmp/spl_fw_env.config BOOT_FW_SLOT
+busybox blockdev --setro $SPLENVPARTITION"  
+test_command "fw_printenv -c /tmp/spl_fw_env.config | grep BOOT_FW_SLOT" ""
 echo "----------------------------------------"
 
 echo "Checking output of command when calling help etc"
