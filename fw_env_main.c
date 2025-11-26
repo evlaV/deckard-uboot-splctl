@@ -27,6 +27,9 @@
 #include <sys/ioctl.h>
 #include <linux/fs.h>
 
+//#define SPL_MODE_DISABLE_OVERRIDE_ALLOWED
+//#define FORCE_RESCUE_ALLOWED
+
 #define U_BOOT_VERSION "2025.8"
 
 //prototypes
@@ -63,6 +66,7 @@ int set_blockdev_ro(int set_read_only)
     return 0;
 }
 
+#ifdef SPL_MODE_DISABLE_OVERRIDE_ALLOWED
 int check_for_spl_mode_override_file(void)
 {
 	const char *path = "/tmp/spl_mode_disable.txt";
@@ -70,17 +74,20 @@ int check_for_spl_mode_override_file(void)
 
     return stat(path, &sb) == 0;
 }
+#endif
 
 int check_for_spl_partition(void)
 {
 	const char *path = DEVICE1_NAME;
     struct stat sb;
 
+#ifdef SPL_MODE_DISABLE_OVERRIDE_ALLOWED
 	if( check_for_spl_mode_override_file() ) 
 	{
 		//this is used to force us into the non-spl path for testing
 		return 0;
 	}
+#endif		
 
     if (stat(path, &sb) == 0) {
         if (S_ISBLK(sb.st_mode))
@@ -180,12 +187,14 @@ int parse_rauc_args(int argc, char *argv[])
 		fw_setenv_set_state(&env_opts, argv[ 2 ], argv[ 3 ]);
 		set_blockdev_ro(1);
 	}
+#ifdef FORCE_RESCUE_ALLOWED	
 	else if ( argc == 2 && !strcmp( argv[ 1 ], "force-rescue" ) )
 	{
-		//set_blockdev_ro(0);
-		//fw_setenv_force_rescue(&env_opts);
-		//set_blockdev_ro(1);
+		set_blockdev_ro(0);
+		fw_setenv_force_rescue(&env_opts);
+		set_blockdev_ro(1);
 	}
+#endif
 	else if ( argc == 3 && !strcmp( argv[ 1 ], "set-bootfw-slot" ) )
 	{
 		//set primary implies setting A or B as primary, but also marking it as good
