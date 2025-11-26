@@ -36,6 +36,7 @@ int fw_setenv_set_primary(struct env_opts *opts, char *target);
 int fw_setenv_force_rescue(struct env_opts *opts);
 int fw_getenv_get_valid(struct env_opts *opts, char *target);
 int fw_setenv_set_bootfw_slot(struct env_opts *opts, char *target);
+int fw_getenv_get_bootfw_slot(struct env_opts *opts);
 
 static struct env_opts env_opts;
 
@@ -189,6 +190,10 @@ int parse_rauc_args(int argc, char *argv[])
 		set_blockdev_ro(0);
 		fw_setenv_set_bootfw_slot(&env_opts, argv[ 2 ]);
 		set_blockdev_ro(1);
+	}
+	else if ( argc == 2 && !strcmp( argv[ 1 ], "get-bootfw-slot" ) )
+	{
+		fw_getenv_get_bootfw_slot(&env_opts);
 	}
 	
 	return 0;

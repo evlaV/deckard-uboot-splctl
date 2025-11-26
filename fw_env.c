@@ -554,6 +554,25 @@ int fw_getenv_get_primary(struct env_opts *opts)
 	return 1;
 }
 
+int fw_getenv_get_bootfw_slot(struct env_opts *opts)
+{
+	char *new_argv[] = { "BOOTED_FW_SLOT", NULL };
+	int argc = sizeof(new_argv) / sizeof(new_argv[0]) - 1; // Subtract 1 for NULL
+	char strval[64];
+
+	fw_getenvvar(argc, new_argv, strval, opts);
+
+	char * strptr;
+	strptr = extract_quoted_str(strval);
+
+	if( strptr )
+	{
+		printf("%c\n",strptr[0]); //just print first character -- which should be A or B
+		return 0;
+	}
+
+	return 1;
+}
 
 int fw_getenv_get_boot_count(struct env_opts *opts, char *target, int * boot_count)
 {
