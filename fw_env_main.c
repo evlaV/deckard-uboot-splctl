@@ -9,6 +9,8 @@
  reworked for spl
  */
 
+ //TODO: get the backup spl env working!!
+
 #include <env.h>
 #include <fcntl.h>
 #include <getopt.h>
@@ -61,7 +63,7 @@ int set_blockdev_ro(int set_read_only)
     return 0;
 }
 
-int check_for_spl_mode_override_file()
+int check_for_spl_mode_override_file(void)
 {
 	const char *path = "/tmp/spl_mode_disable.txt";
     struct stat sb;
@@ -69,7 +71,7 @@ int check_for_spl_mode_override_file()
     return stat(path, &sb) == 0;
 }
 
-int check_for_spl_partition()
+int check_for_spl_partition(void)
 {
 	const char *path = DEVICE1_NAME;
     struct stat sb;
@@ -96,7 +98,7 @@ int check_for_spl_partition()
     }
 }
 
-int get_slot_from_kernel_command_line()
+int get_slot_from_kernel_command_line(void)
 {
     int retval = 0;
 	char *cmdline = NULL;
@@ -321,7 +323,7 @@ int main(int argc, char *argv[])
 	int ret = 0;
 	int splenvexists = 0;
 
-	splenvexists = check_for_spl_partition(&env_opts);
+	splenvexists = check_for_spl_partition();
 
 	if( splenvexists ) 
 	{
@@ -337,4 +339,3 @@ int main(int argc, char *argv[])
 
 }
 
-//note to gabe -- get the backup spl env working
