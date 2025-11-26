@@ -539,6 +539,7 @@ int fw_getenv_get_primary(struct env_opts *opts)
 	char *new_argv[] = { "BOOT_ORDER", NULL };
 	int argc = sizeof(new_argv) / sizeof(new_argv[0]) - 1; // Subtract 1 for NULL
 	char strval[64];
+	strval[0]='\0';
 
 	fw_getenvvar(argc, new_argv, strval, opts);
 
@@ -559,6 +560,7 @@ int fw_getenv_get_bootfw_slot(struct env_opts *opts)
 	char *new_argv[] = { "BOOTED_FW_SLOT", NULL };
 	int argc = sizeof(new_argv) / sizeof(new_argv[0]) - 1; // Subtract 1 for NULL
 	char strval[64];
+	strval[0]='\0';
 
 	fw_getenvvar(argc, new_argv, strval, opts);
 
@@ -619,6 +621,7 @@ int fw_getenv_get_valid(struct env_opts *opts, char *target)
 {
 	char strval[64];
 	strval[0] = '\0';
+
 	if(!strcmp(target,"A"))
 	{
 		char *new_argv[] = { "BOOT_VALID_A", NULL };
@@ -657,6 +660,7 @@ int fw_getenv_get_state(struct env_opts *opts, char *target)
 {
 	char strval[64];
 	strval[0] = '\0';
+
 	if(!strcmp(target,"A"))
 	{
 		char *new_argv[] = { "BOOT_STATE_A", NULL };
