@@ -46,9 +46,5 @@
 #endif
 
 #ifndef CONFIG_BOOTCOMMAND
-#define CONFIG_BOOTCOMMAND						\
-	"bootp; "							\
-	"setenv bootargs root=/dev/nfs nfsroot=${serverip}:${rootpath} "\
-	"ip=${ipaddr}:${serverip}:${gatewayip}:${netmask}:${hostname}::off; "\
-	"bootm"
+#define CONFIG_BOOTCOMMAND	"boot"
 #endif
