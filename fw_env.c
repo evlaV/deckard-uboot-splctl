@@ -48,6 +48,8 @@ struct env_opts default_opts = {
 #endif
 };
 
+#define STR_EMPTY(s) (!(s) || (s)[0] == '\0')
+
 #define DIV_ROUND_UP(n, d)	(((n) + (d) - 1) / (d))
 
 #define min(x, y) ({				\
@@ -546,7 +548,7 @@ int fw_getenv_get_primary(struct env_opts *opts)
 	char * strptr;
 	strptr = extract_quoted_str(strval);
 
-	if( strptr )
+	if( ! STR_EMPTY(strptr) )
 	{
 		printf("%c\n",strptr[0]); //just print first character -- which should be A or B
 		return 0;
@@ -567,7 +569,7 @@ int fw_getenv_get_bootfw_slot(struct env_opts *opts)
 	char * strptr;
 	strptr = extract_quoted_str(strval);
 
-	if( strptr )
+	if( ! STR_EMPTY(strptr) )
 	{
 		printf("%c\n",strptr[0]); //just print first character -- which should be A or B
 		return 0;
@@ -602,13 +604,13 @@ int fw_getenv_get_boot_count(struct env_opts *opts, char *target, int * boot_cou
 	char * strptr;
 	strptr = extract_quoted_str(strval);
 
-	if( strptr && !boot_count )
+	if( !STR_EMPTY(strptr) && !boot_count )
 	{
 		printf("%s\n",strptr);
 		return 0;
 	}
 
-	if(strptr && boot_count)
+	if( !STR_EMPTY(strptr) && boot_count)
 	{
 		*boot_count = atoi(strptr);
 		return 0;
