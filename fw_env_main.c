@@ -26,11 +26,12 @@
 #include "fw_env.h"
 #include <sys/ioctl.h>
 #include <linux/fs.h>
+#include <sys/sysmacros.h>
 
 //#define SPL_MODE_DISABLE_OVERRIDE_ALLOWED
 //#define FORCE_RESCUE_ALLOWED
 
-#define U_BOOT_VERSION "2025.8"
+#define U_BOOT_VERSION "2026.1"
 
 //prototypes
 int fw_getenv_get_primary(struct env_opts *opts);
@@ -45,6 +46,41 @@ int fw_getenv_get_bootfw_slot(struct env_opts *opts);
 
 static struct env_opts env_opts;
 
+int blkroset(int fd, int setro_val)
+{
+	//using fd, get block maj:min
+	//contents of /sys/dev/block/maj:min/../dev tells you the parent device blockdev maj:min
+	//open the parent blockdev as well as the existing fd, then try to setro on both
+	int ret = 0;
+	unsigned dmaj,dmin;
+	bool parent_exists = false;
+	struct stat st;
+	if (fstat(fd, &st) < 0) return -1;
+	if (!S_ISBLK(st.st_mode)) return -1;
+
+	char p[128];
+	snprintf(p, sizeof(p), "/sys/dev/block/%u:%u/../dev", major(st.st_rdev), minor(st.st_rdev));
+	FILE *f = fopen(p, "r");
+	if (f) { parent_exists = (fscanf(f, "%u:%u", &dmaj, &dmin) == 2); fclose(f); }
+
+	if(parent_exists)
+	{
+		//parent means we have an fd to /dev/sdc1 for example, so the parent would be /dev/sdc
+		snprintf(p, sizeof(p), "/dev/block/%u:%u", dmaj, dmin);
+		int fd_parent = open(p, O_RDONLY | O_CLOEXEC);
+		if(fd_parent >= 0) 
+		{
+			ioctl(fd_parent, BLKROSET, &setro_val); //ignore failure case
+			close(fd_parent);
+		}
+	}
+
+	//this could be either /dev/sdc1, or could even be /dev/sdc -- we can handle both situations
+	ret = ioctl(fd, BLKROSET, &setro_val);
+
+	return ret;
+}
+
 int set_blockdev_ro(int set_read_only) 
 {
     int fd;
@@ -56,11 +92,7 @@ int set_blockdev_ro(int set_read_only)
 		return 1;
     }
 
-    ret = ioctl(fd, BLKROSET, &ro);
-    if (ret < 0) {
-        close(fd);
-        return ret;
-    }
+    blkroset(fd,set_read_only);
 
     close(fd);
     return 0;
