@@ -47,6 +47,7 @@ int fw_getenv_get_bootfw_slot(struct env_opts *opts);
 static struct env_opts env_opts;
 
 static int g_blkdev_was_locked = 0;
+static int g_blkdev_parent_was_locked = 0;
 
 int blkroset(int fd, int setro_val)
 {
@@ -75,8 +76,8 @@ int blkroset(int fd, int setro_val)
 			//only set BLKROSET if the existing RO bit is enabled
 			int getro_val = 0;
 			ioctl(fd_parent, BLKROGET, &getro_val);
-			if(getro_val == 1) g_blkdev_was_locked = 1;
-			if(g_blkdev_was_locked) ioctl(fd_parent, BLKROSET, &setro_val); //ignore failure case
+			if(getro_val == 1) g_blkdev_parent_was_locked = 1;
+			if(g_blkdev_parent_was_locked) ioctl(fd_parent, BLKROSET, &setro_val); //ignore failure case
 			close(fd_parent);
 		}
 	}
